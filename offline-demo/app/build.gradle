@@ -12,6 +12,15 @@ def copySharedDisplay = tasks.register('copySharedDisplay', Sync) {
     }
     into(sharedDisplay)
 }
+def sharedResources = layout.buildDirectory.dir('generated/shared-resources')
+def copySharedResources = tasks.register('copySharedResources', Sync) {
+    from('../../app/src/main/res') {
+        // Authentication/test screens belong only to the original Firebase app.
+        exclude '**/activity_login.xml', '**/activity_register.xml',
+                '**/activity_change_password.xml', '**/activity_test.xml'
+    }
+    into(sharedResources)
+}
 
 android {
     // Original adapters refer to this R namespace; applicationId is independent.
@@ -32,13 +41,13 @@ android {
     sourceSets {
         main {
             // Reuse real original XML and display code, never Firebase controllers.
-            res.srcDirs = ['../../app/src/main/res']
+            res.srcDirs = [sharedResources.get().asFile]
             java.srcDirs = ['src/main/java', sharedDisplay.get().asFile]
         }
     }
     lint { abortOnError true }
 }
-tasks.named('preBuild').configure { dependsOn(copySharedDisplay) }
+tasks.named('preBuild').configure { dependsOn(copySharedDisplay,copySharedResources) }
 
 dependencies {
     implementation 'androidx.appcompat:appcompat:1.6.1'
