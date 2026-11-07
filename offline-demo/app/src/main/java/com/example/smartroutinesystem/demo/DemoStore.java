@@ -12,10 +12,10 @@ import java.util.Map;
 
 /** Fictional, process-local data. No accounts, credentials, database or network. */
 public final class DemoStore {
-    public static final DemoStore INSTANCE = new DemoStore();
     public static final String STUDENT = "demo-student", CR = "demo-cr", ADMIN = "demo-admin";
     public static final List<String> DAYS = Collections.unmodifiableList(Arrays.asList("Saturday", "Sunday", "Monday", "Tuesday", "Wednesday"));
     public static final List<String> TIMES = Collections.unmodifiableList(Arrays.asList("8.00 AM", "8.50 AM", "9.40 AM", "10.50 AM", "11.40 AM", "12.30 PM", "2.30 PM", "3.20 PM", "4.10 PM"));
+    public static final DemoStore INSTANCE = new DemoStore();
 
     public static final class Person {
         public final String id, name, roll, email, phone;
