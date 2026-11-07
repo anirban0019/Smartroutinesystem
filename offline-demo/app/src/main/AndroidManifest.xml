@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="utf-8"?>
+<manifest xmlns:android="http://schemas.android.com/apk/res/android">
+    <!-- Deliberately no Internet permission, Firebase provider or messaging service. -->
+    <application android:allowBackup="false" android:label="Smart Routine Demo"
+        android:icon="@mipmap/ic_launcher" android:supportsRtl="true"
+        android:theme="@style/Theme.Material3.Light">
+        <activity android:name=".demo.DemoLauncherActivity" android:exported="true">
+            <intent-filter>
+                <action android:name="android.intent.action.MAIN" />
+                <category android:name="android.intent.category.LAUNCHER" />
+            </intent-filter>
+        </activity>
+        <activity android:name=".demo.DemoDashboardActivity" android:exported="false" />
+        <activity android:name=".demo.DemoTodayActivity" android:exported="false" />
+        <activity android:name=".demo.DemoRoutineActivity" android:exported="false" />
+        <activity android:name=".demo.DemoRoutineEditorActivity" android:exported="false" />
+        <activity android:name=".demo.DemoNoticesActivity" android:exported="false" />
+        <activity android:name=".demo.DemoNoticeEditorActivity" android:exported="false" />
+        <activity android:name=".demo.DemoProfileActivity" android:exported="false" />
+        <activity android:name=".demo.DemoProfileEditorActivity" android:exported="false" />
+        <activity android:name=".demo.DemoAdminActivity" android:exported="false" />
+        <activity android:name=".demo.DemoMakeCrActivity" android:exported="false" />
+        <activity android:name=".demo.DemoRemoveCrActivity" android:exported="false" />
+    </application>
+</manifest>
