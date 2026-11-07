@@ -1,5 +1,18 @@
 plugins { id 'com.android.application' }
 
+def sharedDisplay = layout.buildDirectory.dir('generated/shared-display')
+def copySharedDisplay = tasks.register('copySharedDisplay', Sync) {
+    from('../../app/src/main/java') {
+        include 'com/example/smartroutinesystem/ViewData.java',
+                'com/example/smartroutinesystem/RoutineHolder.java',
+                'com/example/smartroutinesystem/RoutineAdapter.java',
+                'com/example/smartroutinesystem/GridAdapter.java',
+                'com/example/smartroutinesystem/Notice.java',
+                'com/example/smartroutinesystem/NoticeAdapter.java'
+    }
+    into(sharedDisplay)
+}
+
 android {
     // Original adapters refer to this R namespace; applicationId is independent.
     namespace 'com.example.smartroutinesystem'
@@ -20,16 +33,12 @@ android {
         main {
             // Reuse real original XML and display code, never Firebase controllers.
             res.srcDirs = ['../../app/src/main/res']
-            java {
-                srcDirs = ['src/main/java', '../../app/src/main/java']
-                include '**/demo/**', '**/ViewData.java', '**/RoutineHolder.java',
-                        '**/RoutineAdapter.java', '**/GridAdapter.java',
-                        '**/Notice.java', '**/NoticeAdapter.java'
-            }
+            java.srcDirs = ['src/main/java', sharedDisplay.get().asFile]
         }
     }
     lint { abortOnError true }
 }
+tasks.named('preBuild').configure { dependsOn(copySharedDisplay) }
 
 dependencies {
     implementation 'androidx.appcompat:appcompat:1.6.1'
