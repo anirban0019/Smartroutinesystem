@@ -4,7 +4,6 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.pm.PackageInfo;
 import android.content.pm.PackageManager;
-import android.graphics.Bitmap;
 import android.os.ParcelFileDescriptor;
 import androidx.test.core.app.ActivityScenario;
 import androidx.test.ext.junit.runners.AndroidJUnit4;
@@ -13,8 +12,6 @@ import com.example.smartroutinesystem.R;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
-import java.io.File;
-import java.io.FileOutputStream;
 import java.util.Arrays;
 import static androidx.test.espresso.Espresso.onView;
 import static androidx.test.espresso.Espresso.pressBack;
@@ -35,21 +32,21 @@ public class DemoSmokeTest {
     }
     private void capture(String name) throws Exception {
         InstrumentationRegistry.getInstrumentation().waitForIdleSync();
-        Bitmap image=InstrumentationRegistry.getInstrumentation().getUiAutomation().takeScreenshot(); assertNotNull(image);
-        File directory=new File(InstrumentationRegistry.getInstrumentation().getTargetContext().getExternalFilesDir(null),"screenshots");
-        assertTrue(directory.isDirectory() || directory.mkdirs());
-        try (FileOutputStream file=new FileOutputStream(new File(directory,name+".png"))) { assertTrue(image.compress(Bitmap.CompressFormat.PNG,100,file)); }
-        image.recycle();
         // AGP removes installed APKs and their app files after connected tests.
-        // Preserve actual emulator captures in a shell-owned temporary directory.
-        String source=new File(directory,name+".png").getAbsolutePath();
-        try (ParcelFileDescriptor output=InstrumentationRegistry.getInstrumentation().getUiAutomation().executeShellCommand(
-                "mkdir -p /data/local/tmp/smart-routine-demo && cp '"+source+"' /data/local/tmp/smart-routine-demo/"+name+".png && echo captured");
+        // Capture directly into shell-owned storage, outside those app files.
+        // executeShellCommand accepts one command, not shell operators.
+        String target="/data/local/tmp/smart-routine-demo/"+name+".png";
+        shell("mkdir -p /data/local/tmp/smart-routine-demo");
+        shell("screencap -p "+target);
+        assertTrue(shell("ls -l "+target).contains(name+".png"));
+    }
+    private String shell(String command) throws Exception {
+        try (ParcelFileDescriptor output=InstrumentationRegistry.getInstrumentation().getUiAutomation().executeShellCommand(command);
              ParcelFileDescriptor.AutoCloseInputStream input=new ParcelFileDescriptor.AutoCloseInputStream(output)) {
             java.io.ByteArrayOutputStream result=new java.io.ByteArrayOutputStream();
             byte[] buffer=new byte[1024]; int count;
             while ((count=input.read(buffer))!=-1) result.write(buffer,0,count);
-            assertTrue(result.toString("UTF-8").contains("captured"));
+            return result.toString("UTF-8");
         }
     }
     @Test public void studentReadsOriginalRoutineNoticeAndProfileScreens() throws Exception {
