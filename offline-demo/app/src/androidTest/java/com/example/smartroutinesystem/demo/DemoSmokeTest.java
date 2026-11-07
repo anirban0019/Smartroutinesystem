@@ -5,6 +5,7 @@ import android.content.Intent;
 import android.content.pm.PackageInfo;
 import android.content.pm.PackageManager;
 import android.graphics.Bitmap;
+import android.os.ParcelFileDescriptor;
 import androidx.test.core.app.ActivityScenario;
 import androidx.test.ext.junit.runners.AndroidJUnit4;
 import androidx.test.platform.app.InstrumentationRegistry;
@@ -39,6 +40,17 @@ public class DemoSmokeTest {
         assertTrue(directory.isDirectory() || directory.mkdirs());
         try (FileOutputStream file=new FileOutputStream(new File(directory,name+".png"))) { assertTrue(image.compress(Bitmap.CompressFormat.PNG,100,file)); }
         image.recycle();
+        // AGP removes installed APKs and their app files after connected tests.
+        // Preserve actual emulator captures in a shell-owned temporary directory.
+        String source=new File(directory,name+".png").getAbsolutePath();
+        try (ParcelFileDescriptor output=InstrumentationRegistry.getInstrumentation().getUiAutomation().executeShellCommand(
+                "mkdir -p /data/local/tmp/smart-routine-demo && cp '"+source+"' /data/local/tmp/smart-routine-demo/"+name+".png && echo captured");
+             ParcelFileDescriptor.AutoCloseInputStream input=new ParcelFileDescriptor.AutoCloseInputStream(output)) {
+            java.io.ByteArrayOutputStream result=new java.io.ByteArrayOutputStream();
+            byte[] buffer=new byte[1024]; int count;
+            while ((count=input.read(buffer))!=-1) result.write(buffer,0,count);
+            assertTrue(result.toString("UTF-8").contains("captured"));
+        }
     }
     @Test public void studentReadsOriginalRoutineNoticeAndProfileScreens() throws Exception {
         try (ActivityScenario<DemoLauncherActivity> ignored=launch()) {
